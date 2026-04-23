@@ -53,7 +53,7 @@ _SYSTEM_PROMPT = """Ты — опытный IT-рекрутер, который 
   "name": "Имя Фамилия",
   "specialization": "Актуальная должность (последняя/текущая)",
   "experience": "X лет Y месяцев",
-  "languages": "язык1, язык2",
+  "languages": "язык программирования 1, язык программирования 2 (ТОЛЬКО языки программирования, не человеческие языки)",
   "frameworks": "фреймворк1, фреймворк2",
   "libraries": "либа1, либа2",
   "other_skills": "Docker, Linux, ...",
@@ -97,7 +97,7 @@ def _parse_json(raw: str) -> dict | list:
 
 
 async def generate_cv_data(prompt: str, api_key: str, model: str) -> dict:
-    async with httpx.AsyncClient(timeout=90.0) as client:
+    async with httpx.AsyncClient(timeout=120.0) as client:
         resp = await client.post(
             f"{DEEPSEEK_BASE_URL}/chat/completions",
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
@@ -108,11 +108,21 @@ async def generate_cv_data(prompt: str, api_key: str, model: str) -> dict:
                     {"role": "user", "content": prompt},
                 ],
                 "temperature": 0.7,
+                "max_tokens": 4096,
                 "response_format": {"type": "json_object"},
             },
         )
         resp.raise_for_status()
-        content = resp.json()["choices"][0]["message"]["content"]
+        data = resp.json()
+        choice = data["choices"][0]
+        # Warn if model stopped mid-generation
+        finish_reason = choice.get("finish_reason", "")
+        if finish_reason == "length":
+            raise ValueError(
+                "Ответ модели обрезан (превышен лимит токенов). "
+                "Попробуйте уменьшить количество проектов или упростить промпт."
+            )
+        content = choice["message"]["content"]
         return _parse_json(content)
 
 
@@ -239,7 +249,7 @@ def generate_docx(cv_data: dict, output_path: str, logo_path: str):
     _set_table_width(skills_table, 10256)
     for label, key in [
         ("Опыт", "experience"),
-        ("Языки", "languages"),
+        ("Языки программирования", "languages"),
         ("Фреймворки", "frameworks"),
         ("Библиотеки", "libraries"),
         ("Также опыт", "other_skills"),
