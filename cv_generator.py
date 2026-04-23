@@ -1,0 +1,259 @@
+import httpx
+import json
+import re
+
+from docx import Document
+from docx.shared import Pt, Emu, Cm
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
+
+from config import DEEPSEEK_BASE_URL
+
+_SYSTEM_PROMPT = """Ты — специалист по составлению IT-резюме.
+Верни ТОЛЬКО валидный JSON без markdown-обёртки следующей структуры:
+{
+  "name": "Имя Фамилия",
+  "specialization": "Должность / специализация",
+  "experience": "X лет Y месяцев",
+  "languages": "язык1, язык2",
+  "frameworks": "фреймворк1, фреймворк2",
+  "libraries": "либа1, либа2",
+  "other_skills": "Docker, Linux, ...",
+  "projects": [
+    {
+      "name": "Название компании или проекта",
+      "role": "Роль кандидата",
+      "team": "Описание команды",
+      "duration": "X месяцев",
+      "description": "Что делает компания / проект",
+      "implementation": ["пункт 1", "пункт 2"],
+      "tech_stack": "Python, Redis, ..."
+    }
+  ]
+}
+Никакого текста вне JSON. Только JSON."""
+
+_REGEN_FIELD_HINTS = {
+    "name": "Предложи имя и фамилию IT-специалиста.",
+    "specialization": "Предложи должность/специализацию.",
+    "experience": "Укажи суммарный опыт в формате 'X лет Y месяцев'.",
+    "languages": "Перечисли языки программирования через запятую.",
+    "frameworks": "Перечисли фреймворки через запятую.",
+    "libraries": "Перечисли библиотеки и СУБД через запятую.",
+    "other_skills": "Перечисли прочие технические навыки через запятую.",
+    "description": "Опиши компанию или проект одним абзацем.",
+    "role": "Укажи роль специалиста в этом проекте.",
+    "team": "Опиши состав и размер команды.",
+    "duration": "Укажи длительность работы в формате 'X месяцев'.",
+    "implementation": "Перечисли конкретные задачи, которые реализовал специалист (JSON-массив строк).",
+    "tech_stack": "Перечисли технологии, используемые в проекте, через запятую.",
+}
+
+
+def _parse_json(raw: str) -> dict | list:
+    raw = raw.strip()
+    raw = re.sub(r"^```json\s*", "", raw)
+    raw = re.sub(r"\s*```$", "", raw)
+    return json.loads(raw)
+
+
+async def generate_cv_data(prompt: str, api_key: str, model: str) -> dict:
+    async with httpx.AsyncClient(timeout=90.0) as client:
+        resp = await client.post(
+            f"{DEEPSEEK_BASE_URL}/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": _SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.7,
+                "response_format": {"type": "json_object"},
+            },
+        )
+        resp.raise_for_status()
+        content = resp.json()["choices"][0]["message"]["content"]
+        return _parse_json(content)
+
+
+async def regen_field(
+    field: str,
+    context: dict,
+    hint: str,
+    api_key: str,
+    model: str,
+) -> str | list:
+    ctx_lines = "\n".join(f"{k}: {v}" for k, v in context.items() if v)
+    system = (
+        f"Ты — специалист по IT-резюме. Верни ТОЛЬКО значение поля «{field}» без пояснений.\n"
+        f"Для поля «implementation» верни JSON-массив строк.\n"
+        f"Для остальных полей верни обычную строку.\n\n"
+        f"Контекст CV:\n{ctx_lines}"
+    )
+    user_msg = _REGEN_FIELD_HINTS.get(field, f"Сгенерируй значение для поля {field}.")
+    if hint:
+        user_msg += f"\nДополнительные требования: {hint}"
+
+    async with httpx.AsyncClient(timeout=45.0) as client:
+        resp = await client.post(
+            f"{DEEPSEEK_BASE_URL}/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user_msg},
+                ],
+                "temperature": 0.7,
+            },
+        )
+        resp.raise_for_status()
+        result = resp.json()["choices"][0]["message"]["content"].strip()
+
+    if field == "implementation":
+        try:
+            parsed = _parse_json(result)
+            if isinstance(parsed, list):
+                return parsed
+        except Exception:
+            pass
+        return [
+            line.strip().lstrip("•–-").strip()
+            for line in result.split("\n")
+            if line.strip()
+        ]
+    return result
+
+
+# ── DOCX Generation ────────────────────────────────────────────────────────
+
+def _set_table_width(table, width_dxa: int):
+    tbl = table._tbl
+    tblPr = tbl.tblPr
+    if tblPr is None:
+        tblPr = OxmlElement("w:tblPr")
+        tbl.insert(0, tblPr)
+    tblW = OxmlElement("w:tblW")
+    tblW.set(qn("w:w"), str(width_dxa))
+    tblW.set(qn("w:type"), "dxa")
+    tblPr.append(tblW)
+
+
+def _set_cell_borders(cell, color: str = "BFBFBF"):
+    tc = cell._tc
+    tcPr = tc.get_or_add_tcPr()
+    tcBorders = OxmlElement("w:tcBorders")
+    for edge in ("top", "left", "bottom", "right"):
+        b = OxmlElement(f"w:{edge}")
+        b.set(qn("w:val"), "single")
+        b.set(qn("w:sz"), "4")
+        b.set(qn("w:space"), "0")
+        b.set(qn("w:color"), color)
+        tcBorders.append(b)
+    tcPr.append(tcBorders)
+
+
+def _add_skill_row(table, label: str, value: str):
+    row = table.add_row()
+    cell = row.cells[0]
+    _set_cell_borders(cell)
+    para = cell.paragraphs[0]
+    r_label = para.add_run(f"{label}: ")
+    r_label.font.name = "Arial"
+    r_label.font.bold = True
+    r_label.font.size = Pt(11)
+    r_value = para.add_run(value or "")
+    r_value.font.name = "Nunito"
+    r_value.font.bold = False
+    r_value.font.size = Pt(11)
+
+
+def generate_docx(cv_data: dict, output_path: str, logo_path: str):
+    doc = Document()
+
+    # Page margins
+    section = doc.sections[0]
+    section.top_margin = Cm(1.5)
+    section.bottom_margin = Cm(1.5)
+    section.left_margin = Cm(2.0)
+    section.right_margin = Cm(2.0)
+
+    # Header — logo
+    header = section.header
+    h_para = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
+    h_para.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    h_para.clear()
+    run = h_para.add_run()
+    run.add_picture(logo_path, width=Emu(1368701), height=Emu(190500))
+
+    # Title: Name — Specialization
+    title_para = doc.add_paragraph()
+    title_para.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    r = title_para.add_run(f"{cv_data['name']} — {cv_data['specialization']}")
+    r.font.name = "Arial"
+    r.font.bold = True
+    r.font.size = Pt(13)
+
+    # Skills table
+    skills_table = doc.add_table(rows=0, cols=1)
+    _set_table_width(skills_table, 10256)
+    for label, key in [
+        ("Опыт", "experience"),
+        ("Языки", "languages"),
+        ("Фреймворки", "frameworks"),
+        ("Библиотеки", "libraries"),
+        ("Также опыт", "other_skills"),
+    ]:
+        _add_skill_row(skills_table, label, cv_data.get(key, ""))
+
+    # Section heading
+    doc.add_paragraph()
+    h2 = doc.add_paragraph()
+    r2 = h2.add_run("Ключевые проекты")
+    r2.font.name = "Arial"
+    r2.font.bold = True
+    r2.font.size = Pt(12)
+
+    # Per-project tables
+    for project in cv_data.get("projects", []):
+        # Project name subheading
+        pn = doc.add_paragraph()
+        rpn = pn.add_run(project.get("name", ""))
+        rpn.font.name = "Arial"
+        rpn.font.bold = True
+        rpn.font.size = Pt(11)
+
+        pt = doc.add_table(rows=0, cols=1)
+        _set_table_width(pt, 10256)
+
+        _add_skill_row(pt, "Описание", project.get("description", ""))
+        _add_skill_row(pt, "Роль", project.get("role", ""))
+        _add_skill_row(pt, "Команда", project.get("team", ""))
+
+        # Implementation — bullets
+        impl_row = pt.add_row()
+        impl_cell = impl_row.cells[0]
+        _set_cell_borders(impl_cell)
+        ip = impl_cell.paragraphs[0]
+        r_il = ip.add_run("Что реализовывал: ")
+        r_il.font.name = "Arial"
+        r_il.font.bold = True
+        r_il.font.size = Pt(11)
+        impl = project.get("implementation", [])
+        impl_text = (
+            "\n".join(f"• {i}" for i in impl)
+            if isinstance(impl, list)
+            else str(impl)
+        )
+        r_iv = ip.add_run(impl_text)
+        r_iv.font.name = "Nunito"
+        r_iv.font.size = Pt(11)
+
+        _add_skill_row(pt, "Стек", project.get("tech_stack", ""))
+        _add_skill_row(pt, "Длительность", project.get("duration", ""))
+
+        doc.add_paragraph()  # spacer between projects
+
+    doc.save(output_path)
