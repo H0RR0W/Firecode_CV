@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import json
 import bcrypt
@@ -202,7 +203,17 @@ def delete_cv(cv_id: int):
 
 # ── Settings ───────────────────────────────────────────────────────────────
 
+_ENV_KEYS = {
+    "deepseek_api_key": "DEEPSEEK_API_KEY",
+    "deepseek_model": "DEEPSEEK_MODEL",
+}
+
+
 def get_setting(key: str) -> str:
+    # Environment variable takes priority (works on Render / any cloud host)
+    env_val = os.environ.get(_ENV_KEYS.get(key, ""))
+    if env_val:
+        return env_val
     with get_conn() as conn:
         row = conn.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
         return row["value"] if row else ""
