@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.pyo
+cv_data.db
+cv_data.db-shm
+cv_data.db-wal
+storage/cvs/*.docx
+.env
