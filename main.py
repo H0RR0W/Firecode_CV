@@ -9,6 +9,7 @@ import database
 import auth
 from config import BASE_DIR, STATIC_DIR, TEMPLATES_DIR, CV_DIR, LOGO_PATH
 
+CV_DIR.mkdir(parents=True, exist_ok=True)
 database.init_db()
 
 app = FastAPI(title="FIRECODE CV Generator")
