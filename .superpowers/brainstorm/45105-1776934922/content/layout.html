@@ -1,0 +1,116 @@
+<h2>Как должен выглядеть основной экран приложения?</h2>
+<p class="subtitle">Выбери layout, который лучше всего подходит под задачу</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8f9fa;padding:12px;font-size:11px;font-family:monospace;line-height:1.4">
+      <div style="display:flex;gap:8px;height:160px">
+        <div style="width:38%;background:#1e293b;color:#e2e8f0;padding:8px;border-radius:4px;overflow:hidden">
+          <div style="font-size:9px;color:#94a3b8;margin-bottom:6px">СПИСОК CV</div>
+          <div style="background:#334155;padding:4px 6px;border-radius:3px;margin-bottom:4px;font-size:9px">
+            <div style="font-weight:bold">Алексей К.</div>
+            <div style="color:#94a3b8">PHP · 23.04.2026</div>
+          </div>
+          <div style="background:#0f172a;padding:4px 6px;border-radius:3px;margin-bottom:4px;font-size:9px;border:1px solid #3b82f6">
+            <div style="font-weight:bold">Диана К.</div>
+            <div style="color:#94a3b8">Python · 22.04.2026</div>
+          </div>
+          <div style="background:#334155;padding:4px 6px;border-radius:3px;margin-bottom:4px;font-size:9px">
+            <div style="font-weight:bold">Кирилл И.</div>
+            <div style="color:#94a3b8">Node.js · 20.04.2026</div>
+          </div>
+          <div style="margin-top:8px;background:#3b82f6;color:white;padding:4px;border-radius:3px;font-size:9px;text-align:center">+ Создать CV</div>
+        </div>
+        <div style="flex:1;background:#f1f5f9;padding:8px;border-radius:4px">
+          <div style="font-size:10px;font-weight:bold;margin-bottom:4px">Диана К. — Python Developer</div>
+          <div style="font-size:8px;color:#64748b;margin-bottom:6px">Создано: 22.04.2026</div>
+          <div style="background:white;border:1px solid #e2e8f0;border-radius:3px;padding:6px;font-size:8px;height:80px;overflow:hidden">
+            <div style="font-weight:bold;margin-bottom:2px">Опыт: 5 лет</div>
+            <div style="color:#64748b">Python, Django, FastAPI<br>PostgreSQL, Redis...</div>
+          </div>
+          <div style="display:flex;gap:4px;margin-top:6px">
+            <div style="background:#3b82f6;color:white;padding:3px 6px;border-radius:3px;font-size:8px">Редактировать</div>
+            <div style="background:#10b981;color:white;padding:3px 6px;border-radius:3px;font-size:8px">Скачать</div>
+            <div style="background:#ef4444;color:white;padding:3px 6px;border-radius:3px;font-size:8px">Удалить</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Sidebar + Detail</h3>
+      <p>Список CV слева, детали справа. Классический «почтовый» интерфейс. Быстрая навигация.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8f9fa;padding:12px;font-size:11px;font-family:monospace;line-height:1.4">
+      <div style="height:160px">
+        <div style="background:#1e293b;padding:6px 10px;border-radius:4px 4px 0 0;display:flex;justify-content:space-between;align-items:center">
+          <span style="color:#e2e8f0;font-size:9px;font-weight:bold">CV Generator</span>
+          <span style="background:#3b82f6;color:white;padding:2px 6px;border-radius:3px;font-size:8px">+ Создать</span>
+        </div>
+        <div style="background:#f1f5f9;padding:6px;border-radius:0 0 4px 4px">
+          <div style="display:flex;gap:4px;margin-bottom:6px">
+            <div style="background:white;border:1px solid #e2e8f0;border-radius:3px;padding:2px 6px;font-size:8px;flex:1">🔍 Поиск...</div>
+            <div style="background:white;border:1px solid #e2e8f0;border-radius:3px;padding:2px 6px;font-size:8px">PHP ▾</div>
+            <div style="background:white;border:1px solid #e2e8f0;border-radius:3px;padding:2px 6px;font-size:8px">Дата ▾</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+            <div style="background:white;border:1px solid #e2e8f0;border-radius:3px;padding:4px;font-size:8px">
+              <div style="font-weight:bold">Алексей К.</div>
+              <div style="color:#64748b">PHP</div>
+              <div style="color:#94a3b8;font-size:7px">23.04.2026</div>
+            </div>
+            <div style="background:white;border:1px solid #e2e8f0;border-radius:3px;padding:4px;font-size:8px">
+              <div style="font-weight:bold">Диана К.</div>
+              <div style="color:#64748b">Python</div>
+              <div style="color:#94a3b8;font-size:7px">22.04.2026</div>
+            </div>
+            <div style="background:white;border:1px solid #e2e8f0;border-radius:3px;padding:4px;font-size:8px">
+              <div style="font-weight:bold">Кирилл И.</div>
+              <div style="color:#64748b">Node.js</div>
+              <div style="color:#94a3b8;font-size:7px">20.04.2026</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Dashboard / Grid</h3>
+      <p>Карточки CV в сетке, фильтры сверху. Клик на карточку → модальное окно или отдельная страница.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8f9fa;padding:12px;font-size:11px;font-family:monospace;line-height:1.4">
+      <div style="height:160px">
+        <div style="background:#1e293b;padding:6px 10px;border-radius:4px 4px 0 0;display:flex;gap:12px;align-items:center">
+          <span style="color:#e2e8f0;font-size:9px;font-weight:bold">CV Generator</span>
+          <span style="color:#94a3b8;font-size:9px">Список</span>
+          <span style="color:#3b82f6;font-size:9px;border-bottom:1px solid #3b82f6">Создать</span>
+        </div>
+        <div style="background:#f1f5f9;padding:6px;border-radius:0 0 4px 4px">
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:3px;padding:6px;margin-bottom:6px">
+            <div style="font-size:8px;color:#1d4ed8;font-weight:bold;margin-bottom:3px">Новый CV</div>
+            <div style="background:white;border:1px solid #e2e8f0;border-radius:2px;padding:3px;font-size:7px;color:#94a3b8;margin-bottom:3px">Введите промпт: "Создай CV для Senior PHP..."</div>
+            <div style="background:#3b82f6;color:white;padding:2px 8px;border-radius:2px;font-size:7px;display:inline-block">Генерировать ⚡</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="background:white;border:1px solid #e2e8f0;border-radius:2px;padding:3px 6px;font-size:8px;display:flex;justify-content:space-between">
+              <span><b>Алексей К.</b> — PHP</span><span style="color:#94a3b8">23.04</span>
+            </div>
+            <div style="background:white;border:1px solid #e2e8f0;border-radius:2px;padding:3px 6px;font-size:8px;display:flex;justify-content:space-between">
+              <span><b>Диана К.</b> — Python</span><span style="color:#94a3b8">22.04</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Вкладки (Создать / Список)</h3>
+      <p>Две вкладки: генерация CV и список. Простой, линейный поток. Меньше элементов на экране.</p>
+    </div>
+  </div>
+
+</div>

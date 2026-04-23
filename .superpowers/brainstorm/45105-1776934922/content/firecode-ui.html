@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Generator — Firecode UI Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #000; color: #fff; min-height: 100vh; }
+
+  /* Header */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px; height: 64px; background: #000;
+    border-bottom: 1px solid #1d1d1d; position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 32px; height: 32px; background: linear-gradient(155deg, #1d1d1d 30%, #8300ea 100%);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;
+  }
+  .logo-text { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .logo-text span { color: #8300ea; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; background: #111; border-radius: 100px; padding: 4px; }
+  .tab {
+    padding: 7px 20px; border-radius: 100px; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s ease; color: #666; border: none; background: transparent;
+  }
+  .tab.active { background: #fff; color: #000; }
+  .tab:hover:not(.active) { color: #999; }
+
+  /* Main content */
+  .main { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+  /* Generate tab */
+  .section-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .section-sub { color: #666; font-size: 14px; margin-bottom: 32px; }
+
+  .prompt-area {
+    background: #0a0a0a; border: 1px solid #1d1d1d; border-radius: 15px;
+    padding: 20px; margin-bottom: 16px; transition: border-color 0.2s;
+  }
+  .prompt-area:focus-within { border-color: #8300ea; }
+  .prompt-label { font-size: 11px; font-weight: 600; color: #666; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 10px; }
+  .prompt-textarea {
+    width: 100%; background: transparent; border: none; outline: none;
+    color: #fff; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 300;
+    resize: none; line-height: 1.6; min-height: 100px;
+  }
+  .prompt-textarea::placeholder { color: #444; }
+  .prompt-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid #1d1d1d; }
+  .model-badge {
+    font-size: 11px; color: #666; background: #111; padding: 4px 10px;
+    border-radius: 100px; border: 1px solid #1d1d1d;
+  }
+  .btn-generate {
+    background: linear-gradient(155deg, #1d1d1d 30%, #8300ea 100%);
+    border: none; color: #fff; padding: 10px 24px; border-radius: 100px;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .btn-generate:hover { opacity: 0.85; }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid #1d1d1d; margin: 40px 0; }
+
+  /* CV List (tab 2) */
+  .filters { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; }
+  .filter-input {
+    flex: 1; min-width: 180px; background: #0a0a0a; border: 1px solid #1d1d1d;
+    border-radius: 100px; padding: 9px 16px; color: #fff; font-family: 'Inter', sans-serif;
+    font-size: 13px; outline: none; transition: border-color 0.2s;
+  }
+  .filter-input:focus { border-color: #8300ea; }
+  .filter-input::placeholder { color: #444; }
+  .filter-select {
+    background: #0a0a0a; border: 1px solid #1d1d1d; border-radius: 100px;
+    padding: 9px 16px; color: #666; font-family: 'Inter', sans-serif; font-size: 13px; outline: none;
+  }
+
+  /* CV Cards */
+  .cv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cv-card {
+    background: #0a0a0a; border: 1px solid #1d1d1d; border-radius: 15px;
+    padding: 20px; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden;
+  }
+  .cv-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, #8300ea, #0033ea); opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .cv-card:hover { border-color: #2a2a2a; transform: translateY(-2px); box-shadow: 0 8px 32px #0000003f; }
+  .cv-card:hover::before { opacity: 1; }
+  .cv-card-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .cv-card-spec { font-size: 13px; color: #8300ea; font-weight: 500; margin-bottom: 12px; }
+  .cv-card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tag {
+    font-size: 11px; background: #111; border: 1px solid #1d1d1d;
+    border-radius: 100px; padding: 3px 10px; color: #888;
+  }
+  .cv-card-footer { display: flex; justify-content: space-between; align-items: center; }
+  .cv-card-date { font-size: 11px; color: #444; }
+  .cv-card-actions { display: flex; gap: 8px; }
+  .btn-icon {
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid #1d1d1d;
+    background: transparent; color: #666; font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+  }
+  .btn-icon:hover { border-color: #8300ea; color: #8300ea; }
+  .btn-icon.danger:hover { border-color: #ec2f2e; color: #ec2f2e; }
+
+  /* Detail page preview */
+  .detail-header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
+  .back-btn {
+    display: flex; align-items: center; gap: 6px; color: #666; font-size: 13px;
+    cursor: pointer; background: none; border: none; font-family: 'Inter', sans-serif;
+    padding: 0; transition: color 0.2s;
+  }
+  .back-btn:hover { color: #fff; }
+  .detail-title { font-size: 22px; font-weight: 700; }
+
+  .detail-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  .panel { background: #0a0a0a; border: 1px solid #1d1d1d; border-radius: 15px; padding: 24px; }
+  .panel-title { font-size: 11px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+
+  .form-field { margin-bottom: 16px; }
+  .field-label { font-size: 11px; color: #666; margin-bottom: 6px; font-weight: 500; }
+  .field-input {
+    width: 100%; background: #111; border: 1px solid #1d1d1d; border-radius: 8px;
+    padding: 9px 12px; color: #fff; font-family: 'Inter', sans-serif; font-size: 13px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .field-input:focus { border-color: #8300ea; }
+  .field-textarea { resize: vertical; min-height: 80px; }
+
+  /* Preview block */
+  .cv-preview { font-size: 12px; line-height: 1.6; }
+  .preview-name { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: #fff; }
+  .preview-block { background: #111; border: 1px solid #1d1d1d; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+  .preview-block-label { font-size: 10px; font-weight: 600; color: #8300ea; text-transform: uppercase; margin-bottom: 4px; }
+  .preview-block-content { color: #888; font-size: 12px; }
+
+  .btn-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  .btn-primary {
+    background: linear-gradient(155deg, #1d1d1d 30%, #8300ea 100%);
+    border: none; color: #fff; padding: 10px 20px; border-radius: 100px;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .btn-secondary {
+    background: transparent; border: 1px solid #1d1d1d; color: #fff;
+    padding: 10px 20px; border-radius: 100px; font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 500; cursor: pointer; transition: border-color 0.2s;
+  }
+  .btn-secondary:hover { border-color: #fff; }
+  .btn-danger {
+    background: transparent; border: 1px solid #ec2f2e33; color: #ec2f2e;
+    padding: 10px 20px; border-radius: 100px; font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+  }
+
+  .regen-block { margin-top: 20px; padding-top: 20px; border-top: 1px solid #1d1d1d; }
+  .regen-label { font-size: 11px; color: #666; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .regen-input {
+    width: 100%; background: #111; border: 1px solid #1d1d1d; border-radius: 8px;
+    padding: 9px 12px; color: #fff; font-family: 'Inter', sans-serif; font-size: 13px;
+    outline: none; resize: none; min-height: 64px; transition: border-color 0.2s;
+  }
+  .regen-input:focus { border-color: #8300ea; }
+
+  /* Tabs switching simulation */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">F</div>
+    <div class="logo-text">FIRE<span>CODE</span> CV</div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('create', this)">Создать CV</button>
+    <button class="tab" onclick="switchTab('list', this)">Список CV</button>
+  </div>
+  <div style="width:120px"></div>
+</header>
+
+<!-- CREATE TAB -->
+<div class="main">
+  <div id="tab-create" class="tab-content active">
+    <div class="section-title">Генерация резюме</div>
+    <div class="section-sub">Опишите кандидата — AI сформирует структурированное CV в формате FIRECODE</div>
+
+    <div class="prompt-area">
+      <div class="prompt-label">Промпт</div>
+      <textarea class="prompt-textarea" placeholder="Например: Создай CV для Senior PHP разработчика с 8 годами опыта. Работал в fintech-стартапах, знает Laravel, Symfony, PostgreSQL, Redis. Последние 3 года — tech lead команды из 5 человек..."></textarea>
+      <div class="prompt-footer">
+        <div class="model-badge">deepseek-chat</div>
+        <button class="btn-generate">⚡ Сгенерировать</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIST TAB -->
+  <div id="tab-list" class="tab-content">
+    <div class="section-title">Все резюме</div>
+    <div class="section-sub">3 CV в базе</div>
+
+    <div class="filters">
+      <input class="filter-input" placeholder="🔍  Поиск по имени...">
+      <select class="filter-select">
+        <option>Все специализации</option>
+        <option>PHP</option>
+        <option>Python</option>
+        <option>QA</option>
+      </select>
+      <select class="filter-select">
+        <option>Любой стек</option>
+        <option>React</option>
+        <option>Node.js</option>
+      </select>
+      <select class="filter-select">
+        <option>Сначала новые</option>
+        <option>Сначала старые</option>
+      </select>
+    </div>
+
+    <div class="cv-grid">
+      <div class="cv-card" onclick="switchToDetail()">
+        <div class="cv-card-name">Алексей К.</div>
+        <div class="cv-card-spec">PHP Developer</div>
+        <div class="cv-card-tags">
+          <span class="tag">PHP</span><span class="tag">Python</span><span class="tag">Django</span>
+          <span class="tag">MySQL</span><span class="tag">Docker</span>
+        </div>
+        <div class="cv-card-footer">
+          <div class="cv-card-date">23 апр 2026</div>
+          <div class="cv-card-actions">
+            <button class="btn-icon" title="Скачать">↓</button>
+            <button class="btn-icon danger" title="Удалить">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cv-card">
+        <div class="cv-card-name">Диана К.</div>
+        <div class="cv-card-spec">Python Developer</div>
+        <div class="cv-card-tags">
+          <span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">PostgreSQL</span>
+          <span class="tag">Redis</span>
+        </div>
+        <div class="cv-card-footer">
+          <div class="cv-card-date">22 апр 2026</div>
+          <div class="cv-card-actions">
+            <button class="btn-icon" title="Скачать">↓</button>
+            <button class="btn-icon danger" title="Удалить">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cv-card">
+        <div class="cv-card-name">Кирилл И.</div>
+        <div class="cv-card-spec">Node.js Developer</div>
+        <div class="cv-card-tags">
+          <span class="tag">Node.js</span><span class="tag">React</span><span class="tag">MongoDB</span>
+        </div>
+        <div class="cv-card-footer">
+          <div class="cv-card-date">20 апр 2026</div>
+          <div class="cv-card-actions">
+            <button class="btn-icon" title="Скачать">↓</button>
+            <button class="btn-icon danger" title="Удалить">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL PAGE PREVIEW -->
+  <div id="tab-detail" class="tab-content">
+    <div class="detail-header">
+      <button class="back-btn" onclick="switchTab('list', null)">← Список</button>
+      <div class="detail-title">Алексей К. — PHP Developer</div>
+    </div>
+
+    <div class="detail-layout">
+      <!-- Left: Form -->
+      <div>
+        <div class="panel">
+          <div class="panel-title">Данные кандидата</div>
+          <div class="form-field">
+            <div class="field-label">Имя</div>
+            <input class="field-input" value="Алексей К.">
+          </div>
+          <div class="form-field">
+            <div class="field-label">Специализация</div>
+            <input class="field-input" value="PHP Developer">
+          </div>
+          <div class="form-field">
+            <div class="field-label">Опыт</div>
+            <input class="field-input" value="19 лет 11 месяцев">
+          </div>
+          <div class="form-field">
+            <div class="field-label">Языки</div>
+            <input class="field-input" value="PHP, Python, JavaScript, C#, SQL">
+          </div>
+          <div class="form-field">
+            <div class="field-label">Фреймворки</div>
+            <textarea class="field-input field-textarea">Django, DRF, Node.js, Express, Yii, Vue.js, React.js</textarea>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn-primary">Сохранить</button>
+            <button class="btn-secondary">↓ Скачать docx</button>
+            <button class="btn-danger">Удалить</button>
+          </div>
+
+          <div class="regen-block">
+            <div class="regen-label">Перегенерировать</div>
+            <textarea class="regen-input" placeholder="Уточни промпт или добавь детали...">Senior PHP разработчик, 20 лет опыта, руководил командой 200+ человек...</textarea>
+            <div style="margin-top:8px">
+              <button class="btn-generate">⚡ Перегенерировать</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Preview -->
+      <div>
+        <div class="panel">
+          <div class="panel-title">Превью CV</div>
+          <div class="cv-preview">
+            <div class="preview-name">Алексей К. — PHP</div>
+            <div class="preview-block">
+              <div class="preview-block-label">Опыт</div>
+              <div class="preview-block-content">19 лет 11 месяцев</div>
+            </div>
+            <div class="preview-block">
+              <div class="preview-block-label">Языки</div>
+              <div class="preview-block-content">PHP, Python, JavaScript, C#, SQL</div>
+            </div>
+            <div class="preview-block">
+              <div class="preview-block-label">Фреймворки</div>
+              <div class="preview-block-content">Django, DRF, Node.js, Express, Yii, Vue.js, React.js, AngularJS</div>
+            </div>
+            <div class="preview-block">
+              <div class="preview-block-label">Ключевые проекты</div>
+              <div class="preview-block-content">
+                <div style="font-weight:600;color:#ccc;margin-bottom:4px">Интернет-компания (ПО и системная интеграция)</div>
+                <div>Роль: CTO · Команда: 200+ · 98 мес.</div>
+                <div style="color:#666;margin-top:4px">Python, PHP, Docker, Nginx, GitLab CI/CD...</div>
+              </div>
+            </div>
+            <div class="preview-block">
+              <div class="preview-block-label">Киберспортивный портал</div>
+              <div class="preview-block-content">
+                <div>Роль: Team Lead · 13 мес.</div>
+                <div style="color:#666;margin-top:4px">Node.js, MongoDB, Redis, AngularJS...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+  }
+}
+function switchToDetail() {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-detail').classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+}
+</script>
+</body>
+</html>

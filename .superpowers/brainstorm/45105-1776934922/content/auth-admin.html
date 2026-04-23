@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auth + Admin — Firecode CV</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000;--bg-2:#0a0a0a;--bg-3:#111;--bg-4:#161616;
+  --border:#1d1d1d;--border-2:#2a2a2a;
+  --text:#fff;--text-2:#888;--text-3:#444;
+  --tab-bg:#111;--tab-a:#fff;--tab-at:#000;
+  --grad:linear-gradient(155deg,#1d1d1d 30%,#8300ea 100%);
+  --shadow:0 8px 32px #0000004f;
+}
+[data-theme="light"]{
+  --bg:#f3f7ff;--bg-2:#fff;--bg-3:#f5f5f6;--bg-4:#eef2fa;
+  --border:#e2e8f0;--border-2:#cbd5e1;
+  --text:#0a0a0a;--text-2:#64748b;--text-3:#94a3b8;
+  --tab-bg:#e2e8f0;--tab-a:#000;--tab-at:#fff;
+  --shadow:0 8px 32px #0000001a;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .25s,color .25s}
+
+/* ── Nav ── */
+.nav{display:flex;gap:6px;padding:16px;background:var(--bg-2);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.nv{padding:7px 16px;border-radius:100px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-2);font-family:'Inter',sans-serif;transition:all .2s}
+.nv.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.nv:hover:not(.active){color:var(--text);border-color:var(--border-2)}
+.nav-label{font-size:11px;color:var(--text-3);display:flex;align-items:center;padding:0 8px}
+
+.hdr-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+.theme-lbl{font-size:12px;color:var(--text-2)}
+.theme-btn{width:40px;height:22px;border-radius:100px;background:var(--border-2);border:none;cursor:pointer;position:relative}
+.theme-btn::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--text);transition:transform .25s}
+[data-theme="light"] .theme-btn::after{transform:translateX(18px)}
+
+/* ── Screens ── */
+.sc{display:none;min-height:calc(100vh - 56px)}.sc.active{display:block}
+
+/* ─── LOGIN PAGE ─── */
+.login-page{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 56px);padding:40px}
+.login-card{width:100%;max-width:380px;background:var(--bg-2);border:1px solid var(--border);border-radius:20px;padding:36px;transition:background .25s,border-color .25s}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;justify-content:center}
+.login-logo-icon{width:36px;height:36px;background:var(--grad);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
+.login-logo-text{font-size:18px;font-weight:700}
+.login-logo-text span{color:#8300ea}
+.login-title{font-size:20px;font-weight:700;margin-bottom:4px;text-align:center}
+.login-sub{font-size:13px;color:var(--text-2);text-align:center;margin-bottom:28px}
+.lf{margin-bottom:16px}
+.ll{font-size:11px;color:var(--text-2);margin-bottom:5px;font-weight:500}
+.li{width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s,background .25s}
+.li:focus{border-color:#8300ea}
+.li::placeholder{color:var(--text-3)}
+.btn-login{width:100%;background:var(--grad);border:none;color:#fff;padding:12px;border-radius:100px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px}
+.btn-login:hover{opacity:.85}
+.login-footer{text-align:center;font-size:12px;color:var(--text-3);margin-top:20px}
+.role-badge{display:inline-flex;align-items:center;gap:5px;background:var(--bg-3);border:1px solid var(--border);border-radius:100px;padding:4px 12px;font-size:11px;color:var(--text-2);margin-top:12px}
+.role-dot{width:6px;height:6px;border-radius:50%}
+.role-dot.admin{background:#8300ea}
+.role-dot.user{background:#0033ea}
+
+/* ─── ADMIN PANEL ─── */
+.admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 56px)}
+
+.sidebar{background:var(--bg-2);border-right:1px solid var(--border);padding:20px 0;transition:background .25s,border-color .25s}
+.sidebar-section{padding:0 12px;margin-bottom:20px}
+.sidebar-label{font-size:10px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;padding:0 8px;margin-bottom:6px}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text-2);transition:all .2s;margin-bottom:2px}
+.sidebar-item:hover{background:var(--bg-3);color:var(--text)}
+.sidebar-item.active{background:var(--bg-3);color:var(--text)}
+.sidebar-item.active .si-icon{color:#8300ea}
+.si-icon{font-size:15px;width:20px;text-align:center}
+.sidebar-user{padding:12px 20px;border-top:1px solid var(--border);margin-top:auto}
+.su-name{font-size:13px;font-weight:600}
+.su-role{font-size:11px;color:#8300ea;font-weight:500}
+.admin-badge{font-size:9px;background:#8300ea22;border:1px solid #8300ea44;color:#8300ea;border-radius:100px;padding:1px 6px;margin-left:6px}
+
+.admin-content{padding:32px}
+.ac-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.ac-sub{font-size:13px;color:var(--text-2);margin-bottom:28px}
+
+/* Stats cards */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+.stat-card{background:var(--bg-2);border:1px solid var(--border);border-radius:15px;padding:20px;transition:background .25s,border-color .25s}
+.stat-val{font-size:28px;font-weight:700;margin-bottom:4px}
+.stat-lbl{font-size:12px;color:var(--text-2)}
+.stat-trend{font-size:11px;color:#1bc15d;margin-top:6px}
+.stat-accent-1{border-top:2px solid #8300ea}
+.stat-accent-2{border-top:2px solid #0033ea}
+.stat-accent-3{border-top:2px solid #1bc15d}
+.stat-accent-4{border-top:2px solid #ffaf00}
+
+/* Chart mock */
+.chart-wrap{background:var(--bg-2);border:1px solid var(--border);border-radius:15px;padding:20px;margin-bottom:24px}
+.chart-title{font-size:13px;font-weight:600;margin-bottom:16px}
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:80px}
+.bar{flex:1;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#8300ea,#0033ea);opacity:.7;transition:opacity .2s;cursor:pointer}
+.bar:hover{opacity:1}
+.chart-labels{display:flex;gap:8px;margin-top:6px}
+.chart-label{flex:1;font-size:10px;color:var(--text-3);text-align:center}
+
+/* Users table */
+.panel{background:var(--bg-2);border:1px solid var(--border);border-radius:15px;overflow:hidden;transition:background .25s,border-color .25s}
+.panel-hdr{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+.panel-title{font-size:13px;font-weight:600}
+.btn-sm{background:var(--grad);border:none;color:#fff;padding:7px 16px;border-radius:100px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.3px;padding:10px 20px;text-align:left;border-bottom:1px solid var(--border)}
+td{font-size:13px;padding:12px 20px;border-bottom:1px solid var(--border);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg-3)}
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:100px;padding:3px 10px;font-size:11px;font-weight:600}
+.badge-admin{background:#8300ea22;border:1px solid #8300ea44;color:#8300ea}
+.badge-user{background:#0033ea22;border:1px solid #0033ea44;color:#0033ea}
+.badge-active{background:#1bc15d22;border:1px solid #1bc15d44;color:#1bc15d}
+.td-actions{display:flex;gap:6px}
+.btn-tbl{background:transparent;border:1px solid var(--border);color:var(--text-2);border-radius:100px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
+.btn-tbl:hover{border-color:#8300ea;color:#8300ea}
+.btn-tbl.danger:hover{border-color:#ec2f2e;color:#ec2f2e}
+
+/* API settings */
+.settings-panel{background:var(--bg-2);border:1px solid var(--border);border-radius:15px;padding:24px;max-width:560px}
+.sp-field{margin-bottom:20px}
+.sp-label{font-size:11px;font-weight:600;color:var(--text-2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.sp-input{width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s,background .25s;letter-spacing:.05em}
+.sp-input:focus{border-color:#8300ea}
+.sp-hint{font-size:11px;color:var(--text-3);margin-top:5px}
+.sp-status{display:flex;align-items:center;gap:6px;font-size:12px;color:#1bc15d;margin-top:12px}
+.sp-dot{width:7px;height:7px;border-radius:50%;background:#1bc15d;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Add user modal hint */
+.modal-hint{background:var(--bg-3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:16px}
+.mh-title{font-size:12px;font-weight:600;margin-bottom:10px;color:var(--text)}
+.mh-field{margin-bottom:10px}
+.mh-label{font-size:10px;color:var(--text-3);margin-bottom:4px}
+.mh-input{width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;outline:none}
+.mh-row{display:flex;gap:8px;margin-top:12px}
+.role-select{flex:1;background:var(--bg-2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;outline:none}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <span class="nav-label">Просмотр:</span>
+  <button class="nv active" onclick="show('login')">🔐 Страница входа</button>
+  <button class="nv" onclick="show('admin-stats')">📊 Статистика</button>
+  <button class="nv" onclick="show('admin-users')">👥 Пользователи</button>
+  <button class="nv" onclick="show('admin-api')">⚙️ API ключ</button>
+  <div class="hdr-right">
+    <span class="theme-lbl" id="tlbl">🌙 Тёмная</span>
+    <button class="theme-btn" onclick="toggleTheme()"></button>
+  </div>
+</div>
+
+<!-- ── LOGIN ── -->
+<div id="sc-login" class="sc active">
+  <div class="login-page">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon">F</div>
+        <div class="login-logo-text">FIRE<span>CODE</span> CV</div>
+      </div>
+      <div class="login-title">Вход в систему</div>
+      <div class="login-sub">Доступ только для сотрудников FIRECODE</div>
+      <div class="lf"><div class="ll">Логин</div><input class="li" placeholder="ivan.petrov" value="admin"></div>
+      <div class="lf"><div class="ll">Пароль</div><input class="li" type="password" placeholder="••••••••" value="••••••••"></div>
+      <button class="btn-login">Войти</button>
+      <div class="login-footer">
+        Нет аккаунта? Обратитесь к администратору.
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+          <div class="role-badge"><div class="role-dot admin"></div> Администратор</div>
+          <div class="role-badge"><div class="role-dot user"></div> Пользователь</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADMIN: STATS ── -->
+<div id="sc-admin-stats" class="sc">
+  <div class="admin-layout">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Главное</div>
+        <div class="sidebar-item active" onclick="show('admin-stats')"><span class="si-icon">📊</span> Статистика</div>
+        <div class="sidebar-item" onclick="show('admin-users')"><span class="si-icon">👥</span> Пользователи</div>
+        <div class="sidebar-item" onclick="show('admin-api')"><span class="si-icon">⚙️</span> API ключ</div>
+        <div class="sidebar-item" onclick="show('login')"><span class="si-icon">↩</span> К приложению</div>
+      </div>
+      <div style="padding:12px 20px;border-top:1px solid var(--border);margin-top:auto">
+        <div style="font-size:13px;font-weight:600">Кирилл А. <span class="admin-badge">admin</span></div>
+        <div style="font-size:11px;color:#8300ea;font-weight:500;margin-top:2px">Администратор</div>
+      </div>
+    </div>
+    <div class="admin-content">
+      <div class="ac-title">Статистика</div>
+      <div class="ac-sub">Общая активность за всё время</div>
+      <div class="stats-grid">
+        <div class="stat-card stat-accent-1"><div class="stat-val">47</div><div class="stat-lbl">CV сгенерировано</div><div class="stat-trend">↑ +8 за последние 7 дней</div></div>
+        <div class="stat-card stat-accent-2"><div class="stat-val">6</div><div class="stat-lbl">Пользователей</div><div class="stat-trend">↑ +1 за последний месяц</div></div>
+        <div class="stat-card stat-accent-3"><div class="stat-val">193</div><div class="stat-lbl">API запросов</div><div class="stat-trend" style="color:#ffaf00">~$0.38 за месяц</div></div>
+        <div class="stat-card stat-accent-4"><div class="stat-val">12</div><div class="stat-lbl">Удалено CV</div><div class="stat-trend" style="color:var(--text-3)">за всё время</div></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-title">Генерации CV по дням (последние 7 дней)</div>
+        <div class="chart-bars">
+          <div class="bar" style="height:35%"></div>
+          <div class="bar" style="height:60%"></div>
+          <div class="bar" style="height:45%"></div>
+          <div class="bar" style="height:80%"></div>
+          <div class="bar" style="height:55%"></div>
+          <div class="bar" style="height:90%"></div>
+          <div class="bar" style="height:70%"></div>
+        </div>
+        <div class="chart-labels">
+          <div class="chart-label">17 апр</div><div class="chart-label">18 апр</div><div class="chart-label">19 апр</div>
+          <div class="chart-label">20 апр</div><div class="chart-label">21 апр</div><div class="chart-label">22 апр</div><div class="chart-label">23 апр</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">Последние действия</div></div>
+        <table>
+          <tr><th>Действие</th><th>Пользователь</th><th>CV</th><th>Время</th></tr>
+          <tr><td>⚡ Сгенерировано</td><td>Мария С.</td><td>Диана К. — Python</td><td style="color:var(--text-3)">10 мин назад</td></tr>
+          <tr><td>✏️ Отредактировано</td><td>Иван П.</td><td>Алексей К. — PHP</td><td style="color:var(--text-3)">1 ч назад</td></tr>
+          <tr><td>↓ Скачано</td><td>Мария С.</td><td>Кирилл И. — Node.js</td><td style="color:var(--text-3)">3 ч назад</td></tr>
+          <tr><td>🗑 Удалено</td><td style="color:#8300ea">admin</td><td>Тест — Draft</td><td style="color:var(--text-3)">вчера</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADMIN: USERS ── -->
+<div id="sc-admin-users" class="sc">
+  <div class="admin-layout">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Главное</div>
+        <div class="sidebar-item" onclick="show('admin-stats')"><span class="si-icon">📊</span> Статистика</div>
+        <div class="sidebar-item active" onclick="show('admin-users')"><span class="si-icon">👥</span> Пользователи</div>
+        <div class="sidebar-item" onclick="show('admin-api')"><span class="si-icon">⚙️</span> API ключ</div>
+        <div class="sidebar-item" onclick="show('login')"><span class="si-icon">↩</span> К приложению</div>
+      </div>
+      <div style="padding:12px 20px;border-top:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:600">Кирилл А. <span class="admin-badge">admin</span></div>
+        <div style="font-size:11px;color:#8300ea;font-weight:500;margin-top:2px">Администратор</div>
+      </div>
+    </div>
+    <div class="admin-content">
+      <div class="ac-title">Пользователи</div>
+      <div class="ac-sub">Управление доступом к системе</div>
+      <div class="panel" style="margin-bottom:20px">
+        <div class="panel-hdr">
+          <div class="panel-title">Все аккаунты (6)</div>
+          <button class="btn-sm">+ Создать пользователя</button>
+        </div>
+        <table>
+          <tr><th>Логин</th><th>Роль</th><th>CV создано</th><th>Последний вход</th><th>Статус</th><th></th></tr>
+          <tr>
+            <td><strong>admin</strong></td>
+            <td><span class="badge badge-admin">admin</span></td>
+            <td>14</td><td style="color:var(--text-3)">только что</td>
+            <td><span class="badge badge-active">● активен</span></td>
+            <td><div class="td-actions"><button class="btn-tbl">Пароль</button></div></td>
+          </tr>
+          <tr>
+            <td>maria.s</td>
+            <td><span class="badge badge-user">user</span></td>
+            <td>18</td><td style="color:var(--text-3)">10 мин назад</td>
+            <td><span class="badge badge-active">● активен</span></td>
+            <td><div class="td-actions"><button class="btn-tbl">Пароль</button><button class="btn-tbl danger">Удалить</button></div></td>
+          </tr>
+          <tr>
+            <td>ivan.p</td>
+            <td><span class="badge badge-user">user</span></td>
+            <td>9</td><td style="color:var(--text-3)">1 ч назад</td>
+            <td><span class="badge badge-active">● активен</span></td>
+            <td><div class="td-actions"><button class="btn-tbl">Пароль</button><button class="btn-tbl danger">Удалить</button></div></td>
+          </tr>
+          <tr>
+            <td>olga.k</td>
+            <td><span class="badge badge-user">user</span></td>
+            <td>6</td><td style="color:var(--text-3)">вчера</td>
+            <td><span class="badge badge-active">● активен</span></td>
+            <td><div class="td-actions"><button class="btn-tbl">Пароль</button><button class="btn-tbl danger">Удалить</button></div></td>
+          </tr>
+        </table>
+      </div>
+      <!-- Add user form -->
+      <div class="panel" style="padding:20px;max-width:420px">
+        <div class="panel-title" style="margin-bottom:14px">Новый пользователь</div>
+        <div class="mh-field"><div class="mh-label">Логин</div><input class="mh-input" placeholder="ivan.petrov" style="background:var(--bg-3);border:1px solid var(--border);border-radius:7px;padding:8px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;width:100%"></div>
+        <div class="mh-field"><div class="mh-label">Пароль</div><input class="mh-input" type="password" placeholder="••••••••" style="background:var(--bg-3);border:1px solid var(--border);border-radius:7px;padding:8px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;width:100%"></div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:4px">
+          <select class="role-select" style="background:var(--bg-3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 12px;font-family:'Inter',sans-serif;font-size:13px;outline:none">
+            <option>user — обычный</option><option>admin — администратор</option>
+          </select>
+          <button class="btn-sm">Создать</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADMIN: API ── -->
+<div id="sc-admin-api" class="sc">
+  <div class="admin-layout">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Главное</div>
+        <div class="sidebar-item" onclick="show('admin-stats')"><span class="si-icon">📊</span> Статистика</div>
+        <div class="sidebar-item" onclick="show('admin-users')"><span class="si-icon">👥</span> Пользователи</div>
+        <div class="sidebar-item active" onclick="show('admin-api')"><span class="si-icon">⚙️</span> API ключ</div>
+        <div class="sidebar-item" onclick="show('login')"><span class="si-icon">↩</span> К приложению</div>
+      </div>
+      <div style="padding:12px 20px;border-top:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:600">Кирилл А. <span class="admin-badge">admin</span></div>
+        <div style="font-size:11px;color:#8300ea;font-weight:500;margin-top:2px">Администратор</div>
+      </div>
+    </div>
+    <div class="admin-content">
+      <div class="ac-title">Настройки API</div>
+      <div class="ac-sub">Один ключ используется всей командой</div>
+      <div class="settings-panel">
+        <div class="sp-field">
+          <div class="sp-label">DeepSeek API ключ</div>
+          <input class="sp-input" type="password" value="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" placeholder="sk-...">
+          <div class="sp-hint">Ключ хранится в зашифрованном виде в базе данных. Пользователи его не видят.</div>
+          <div class="sp-status"><div class="sp-dot"></div> Ключ активен — последняя проверка 5 мин назад</div>
+        </div>
+        <div class="sp-field">
+          <div class="sp-label">Модель</div>
+          <select class="sp-input" style="cursor:pointer">
+            <option>deepseek-chat</option>
+            <option>deepseek-reasoner</option>
+          </select>
+          <div class="sp-hint">deepseek-chat — быстрее и дешевле. deepseek-reasoner — точнее для сложных промптов.</div>
+        </div>
+        <div class="sp-field">
+          <div class="sp-label">Использование за месяц</div>
+          <div style="background:var(--bg-3);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span style="color:var(--text-2)">Токены (input)</span><span>~486 000</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span style="color:var(--text-2)">Токены (output)</span><span>~124 000</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border)">
+              <span style="color:var(--text-2)">Примерная стоимость</span><strong>~$0.38</strong>
+            </div>
+          </div>
+        </div>
+        <button class="btn-sm" style="width:100%;padding:10px">Сохранить настройки</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id){
+  document.querySelectorAll('.sc').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nv').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sc-'+id).classList.add('active');
+}
+function toggleTheme(){
+  const h=document.documentElement,d=h.getAttribute('data-theme')==='dark';
+  h.setAttribute('data-theme',d?'light':'dark');
+  document.getElementById('tlbl').textContent=d?'☀️ Светлая':'🌙 Тёмная';
+}
+</script>
+</body>
+</html>

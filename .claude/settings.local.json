@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash scripts/start-server.sh --project-dir /Users/kirik/Desktop/Int_for_CV)",
+      "Read(//Users/kirik/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/8b9af500-d990-45d7-82cc-d750d5135d24/f9ef1a48-391d-4b77-a86d-edac9ab1110f/skills/docx/**)",
+      "Bash(pandoc --track-changes=all \"/Users/kirik/Downloads/Алексей К. - PHP.docx\" -o /tmp/cv_example.md)",
+      "Read(//tmp/**)",
+      "Bash(python scripts/office/unpack.py \"/Users/kirik/Downloads/Алексей К. - PHP.docx\" /tmp/cv_unpacked/)",
+      "Bash(grep -l \"image\" /tmp/cv_unpacked/word/header*.xml /tmp/cv_unpacked/word/footer*.xml)",
+      "WebFetch(domain:firecode.ru)",
+      "Bash(python3 -c \"import zipfile; z=zipfile.ZipFile\\(''/Users/kirik/Downloads/Алексей К. - PHP.docx''\\); print\\(''\\\\n''.join\\(z.namelist\\(\\)\\)\\)\")",
+      "Bash(pip install:*)",
+      "Bash(python3 -c \"import fastapi, uvicorn, jinja2, docx, bcrypt, itsdangerous, httpx; print\\(''All OK''\\)\")",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(python3 -c \":*)"
+    ]
+  }
+}

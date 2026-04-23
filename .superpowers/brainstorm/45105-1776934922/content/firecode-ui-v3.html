@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Generator — Firecode UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #000; --bg-2: #0a0a0a; --bg-3: #111; --bg-4: #161616;
+    --border: #1d1d1d; --border-2: #2a2a2a;
+    --text: #fff; --text-2: #888; --text-3: #444;
+    --tab-bg: #111; --tab-active-bg: #fff; --tab-active-text: #000;
+    --accent: #8300ea; --shadow: 0 8px 32px #0000004f;
+    --btn-grad: linear-gradient(155deg, #1d1d1d 30%, #8300ea 100%);
+  }
+  [data-theme="light"] {
+    --bg: #f3f7ff; --bg-2: #fff; --bg-3: #f5f5f6; --bg-4: #eef2fa;
+    --border: #e2e8f0; --border-2: #cbd5e1;
+    --text: #0a0a0a; --text-2: #64748b; --text-3: #94a3b8;
+    --tab-bg: #e2e8f0; --tab-active-bg: #000; --tab-active-text: #fff;
+    --shadow: 0 8px 32px #0000001a;
+  }
+
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background .25s, color .25s; }
+
+  /* Header */
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 64px; background: var(--bg); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; transition: background .25s, border-color .25s; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 32px; height: 32px; background: var(--btn-grad); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; }
+  .logo-text { font-size: 16px; font-weight: 700; color: var(--text); }
+  .logo-text span { color: #8300ea; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .theme-label { font-size: 12px; color: var(--text-2); }
+  .theme-toggle { width: 40px; height: 22px; border-radius: 100px; background: var(--border-2); border: none; cursor: pointer; position: relative; }
+  .theme-toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--text); transition: transform .25s; }
+  [data-theme="light"] .theme-toggle::after { transform: translateX(18px); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; background: var(--tab-bg); border-radius: 100px; padding: 4px; }
+  .tab { padding: 7px 20px; border-radius: 100px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-2); border: none; background: transparent; font-family: 'Inter', sans-serif; transition: all .2s; }
+  .tab.active { background: var(--tab-active-bg); color: var(--tab-active-text); }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* Layout */
+  .main { max-width: 980px; margin: 0 auto; padding: 40px 20px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .section-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .section-sub { color: var(--text-2); font-size: 14px; margin-bottom: 32px; }
+
+  /* Prompt */
+  .prompt-area { background: var(--bg-2); border: 1px solid var(--border); border-radius: 15px; padding: 20px; margin-bottom: 16px; transition: border-color .2s, background .25s; }
+  .prompt-area:focus-within { border-color: #8300ea; }
+  .prompt-label { font-size: 11px; font-weight: 600; color: var(--text-2); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 10px; }
+  .prompt-textarea { width: 100%; background: transparent; border: none; outline: none; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 300; resize: none; line-height: 1.6; min-height: 100px; }
+  .prompt-textarea::placeholder { color: var(--text-3); }
+  .prompt-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .model-badge { font-size: 11px; color: var(--text-2); background: var(--bg-3); padding: 4px 10px; border-radius: 100px; border: 1px solid var(--border); }
+  .btn-generate { background: var(--btn-grad); border: none; color: #fff; padding: 10px 24px; border-radius: 100px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-generate:hover { opacity: .85; }
+
+  /* Filters + Grid */
+  .filters { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+  .filter-input, .filter-select { background: var(--bg-2); border: 1px solid var(--border); border-radius: 100px; padding: 9px 16px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; transition: border-color .2s, background .25s; }
+  .filter-input { flex: 1; min-width: 180px; }
+  .filter-input:focus, .filter-select:focus { border-color: #8300ea; }
+  .filter-input::placeholder { color: var(--text-3); }
+  .filter-select { color: var(--text-2); }
+  .cv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cv-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 15px; padding: 20px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; }
+  .cv-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,#8300ea,#0033ea); opacity: 0; transition: opacity .2s; }
+  .cv-card:hover { border-color: var(--border-2); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .cv-card:hover::before { opacity: 1; }
+  .cv-card-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .cv-card-spec { font-size: 13px; color: #8300ea; font-weight: 500; margin-bottom: 12px; }
+  .cv-card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tag { font-size: 11px; background: var(--bg-3); border: 1px solid var(--border); border-radius: 100px; padding: 3px 10px; color: var(--text-2); }
+  .cv-card-footer { display: flex; justify-content: space-between; align-items: center; }
+  .cv-card-date { font-size: 11px; color: var(--text-3); }
+  .cv-card-actions { display: flex; gap: 8px; }
+  .btn-icon { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-2); font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+  .btn-icon:hover { border-color: #8300ea; color: #8300ea; }
+  .btn-icon.danger:hover { border-color: #ec2f2e; color: #ec2f2e; }
+
+  /* Detail */
+  .detail-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+  .back-btn { display: flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 13px; cursor: pointer; background: none; border: none; font-family: 'Inter', sans-serif; padding: 0; transition: color .2s; }
+  .back-btn:hover { color: var(--text); }
+  .detail-title { font-size: 22px; font-weight: 700; }
+
+  /* Two-column detail layout */
+  .detail-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+
+  .panel { background: var(--bg-2); border: 1px solid var(--border); border-radius: 15px; padding: 24px; transition: background .25s, border-color .25s; }
+  .panel-title { font-size: 11px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 16px; }
+
+  .form-field { margin-bottom: 14px; }
+  .field-label { font-size: 11px; color: var(--text-2); margin-bottom: 5px; font-weight: 500; }
+  .field-input { width: 100%; background: var(--bg-3); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; transition: border-color .2s, background .25s; }
+  .field-input:focus { border-color: #8300ea; }
+  .field-textarea { resize: vertical; min-height: 72px; }
+
+  /* ── PROJECTS ── */
+  .projects-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .projects-title { font-size: 11px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .5px; }
+  .btn-add-project { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; color: #8300ea; background: transparent; border: 1px solid #8300ea44; border-radius: 100px; padding: 4px 12px; cursor: pointer; font-family: 'Inter', sans-serif; transition: background .2s; }
+  .btn-add-project:hover { background: #8300ea11; }
+
+  .project-card { background: var(--bg-3); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .project-card-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; cursor: pointer; }
+  .project-card-header:hover { background: var(--bg-4); }
+  .project-name-preview { font-size: 13px; font-weight: 600; }
+  .project-meta-preview { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+  .project-header-right { display: flex; align-items: center; gap: 8px; }
+  .project-chevron { font-size: 11px; color: var(--text-3); transition: transform .2s; }
+  .project-chevron.open { transform: rotate(180deg); }
+  .btn-remove-project { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-3); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+  .btn-remove-project:hover { border-color: #ec2f2e; color: #ec2f2e; }
+
+  .project-body { padding: 0 14px 14px; display: none; border-top: 1px solid var(--border); padding-top: 14px; }
+  .project-body.open { display: block; }
+  .project-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Buttons row */
+  .btn-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  .btn-primary { background: var(--btn-grad); border: none; color: #fff; padding: 10px 20px; border-radius: 100px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 100px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: border-color .2s; }
+  .btn-secondary:hover { border-color: var(--text); }
+  .btn-danger-outline { background: transparent; border: 1px solid #ec2f2e33; color: #ec2f2e; padding: 10px 20px; border-radius: 100px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; }
+
+  .regen-block { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .regen-label { font-size: 11px; color: var(--text-2); text-transform: uppercase; font-weight: 600; letter-spacing: .5px; margin-bottom: 8px; }
+  .regen-input { width: 100%; background: var(--bg-3); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; resize: none; min-height: 64px; transition: border-color .2s, background .25s; }
+  .regen-input:focus { border-color: #8300ea; }
+
+  /* Preview */
+  .cv-preview { font-size: 12px; line-height: 1.6; }
+  .preview-name { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+  .preview-block { background: var(--bg-3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; transition: background .25s, border-color .25s; }
+  .preview-block-label { font-size: 10px; font-weight: 600; color: #8300ea; text-transform: uppercase; margin-bottom: 4px; }
+  .preview-block-content { color: var(--text-2); font-size: 12px; }
+  .preview-project { margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .preview-project:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  .preview-project-name { font-weight: 600; color: var(--text); margin-bottom: 2px; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">F</div>
+    <div class="logo-text">FIRE<span>CODE</span> CV</div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('create',this)">Создать CV</button>
+    <button class="tab" onclick="switchTab('list',this)">Список CV</button>
+  </div>
+  <div class="header-right">
+    <span class="theme-label" id="theme-label">🌙 Тёмная</span>
+    <button class="theme-toggle" onclick="toggleTheme()"></button>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- CREATE -->
+  <div id="tab-create" class="tab-content active">
+    <div class="section-title">Генерация резюме</div>
+    <div class="section-sub">Опишите кандидата — AI сформирует структурированное CV в формате FIRECODE</div>
+    <div class="prompt-area">
+      <div class="prompt-label">Промпт</div>
+      <textarea class="prompt-textarea" placeholder="Например: Создай CV для Senior PHP разработчика с 8 годами опыта. Работал в fintech-стартапах, знает Laravel, Symfony, PostgreSQL, Redis. Последние 3 года — tech lead команды из 5 человек..."></textarea>
+      <div class="prompt-footer">
+        <div class="model-badge">deepseek-chat</div>
+        <button class="btn-generate">⚡ Сгенерировать</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIST -->
+  <div id="tab-list" class="tab-content">
+    <div class="section-title">Все резюме</div>
+    <div class="section-sub">3 CV в базе</div>
+    <div class="filters">
+      <input class="filter-input" placeholder="🔍  Поиск по имени...">
+      <select class="filter-select"><option>Все специализации</option><option>PHP</option><option>Python</option></select>
+      <select class="filter-select"><option>Любой стек</option><option>React</option><option>Node.js</option></select>
+      <select class="filter-select"><option>Сначала новые</option><option>Сначала старые</option></select>
+    </div>
+    <div class="cv-grid">
+      <div class="cv-card" onclick="switchToDetail()">
+        <div class="cv-card-name">Алексей К.</div>
+        <div class="cv-card-spec">PHP Developer</div>
+        <div class="cv-card-tags"><span class="tag">PHP</span><span class="tag">Python</span><span class="tag">Django</span><span class="tag">Docker</span></div>
+        <div class="cv-card-footer"><div class="cv-card-date">23 апр 2026</div><div class="cv-card-actions"><button class="btn-icon">↓</button><button class="btn-icon danger">✕</button></div></div>
+      </div>
+      <div class="cv-card">
+        <div class="cv-card-name">Диана К.</div>
+        <div class="cv-card-spec">Python Developer</div>
+        <div class="cv-card-tags"><span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">PostgreSQL</span></div>
+        <div class="cv-card-footer"><div class="cv-card-date">22 апр 2026</div><div class="cv-card-actions"><button class="btn-icon">↓</button><button class="btn-icon danger">✕</button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL -->
+  <div id="tab-detail" class="tab-content">
+    <div class="detail-header">
+      <button class="back-btn" onclick="switchTab('list',null)">← Список</button>
+      <div class="detail-title">Алексей К. — PHP Developer</div>
+    </div>
+
+    <div class="detail-cols">
+
+      <!-- LEFT: Form -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- Base info -->
+        <div class="panel">
+          <div class="panel-title">Основное</div>
+          <div class="form-field"><div class="field-label">Имя</div><input class="field-input" value="Алексей К."></div>
+          <div class="form-field"><div class="field-label">Специализация</div><input class="field-input" value="PHP Developer"></div>
+          <div class="form-field"><div class="field-label">Суммарный опыт</div><input class="field-input" value="19 лет 11 месяцев"></div>
+          <div class="form-field"><div class="field-label">Языки программирования</div><input class="field-input" value="PHP, Python, JavaScript, C#, SQL"></div>
+          <div class="form-field"><div class="field-label">Фреймворки</div><input class="field-input" value="Django, DRF, Node.js, Yii, Vue.js, React.js"></div>
+          <div class="form-field"><div class="field-label">Библиотеки и технологии</div><textarea class="field-input field-textarea">MySQL, PostgreSQL, MongoDB, Redis, REST API, Docker</textarea></div>
+          <div class="form-field"><div class="field-label">Также опыт</div><textarea class="field-input field-textarea">Linux, Nginx, Terraform, Jira, Scrum, DevOps</textarea></div>
+        </div>
+
+        <!-- Projects -->
+        <div class="panel">
+          <div class="projects-header">
+            <div class="projects-title">Ключевые проекты</div>
+            <button class="btn-add-project" onclick="addProject()">+ Добавить</button>
+          </div>
+
+          <div id="projects-list">
+            <!-- Project 1 -->
+            <div class="project-card">
+              <div class="project-card-header" onclick="toggleProject(this)">
+                <div>
+                  <div class="project-name-preview">Интернет-компания (ПО и системная интеграция)</div>
+                  <div class="project-meta-preview">CTO · 200+ человек · 98 мес.</div>
+                </div>
+                <div class="project-header-right">
+                  <button class="btn-remove-project" onclick="event.stopPropagation();this.closest('.project-card').remove()">✕</button>
+                  <div class="project-chevron">▼</div>
+                </div>
+              </div>
+              <div class="project-body open">
+                <div class="form-field"><div class="field-label">Название проекта</div><input class="field-input" value="Интернет-компания (ПО и системная интеграция)"></div>
+                <div class="project-grid">
+                  <div class="form-field"><div class="field-label">Роль</div><input class="field-input" value="CTO"></div>
+                  <div class="form-field"><div class="field-label">Длительность</div><input class="field-input" value="98 месяцев"></div>
+                </div>
+                <div class="form-field"><div class="field-label">Команда</div><input class="field-input" value="200+ Backend, Frontend, Mobile, DevOps, QA"></div>
+                <div class="form-field"><div class="field-label">Описание проекта</div><textarea class="field-input field-textarea">Разработка ПО и системная интеграция для автоматизации бизнес-процессов. Интранет-порталы, CRM, PIM-системы.</textarea></div>
+                <div class="form-field"><div class="field-label">Что реализовывал (каждый пункт с новой строки)</div><textarea class="field-input field-textarea" style="min-height:100px">Руководил отделом разработки 200+ человек
+Проектировал архитектуру для ~300 проектов
+Обеспечил рост компании с 10 до 220+ сотрудников</textarea></div>
+                <div class="form-field"><div class="field-label">Стек технологий</div><textarea class="field-input field-textarea">Python, PHP, Django, Docker, PostgreSQL, Redis, Nginx, GitLab CI/CD</textarea></div>
+              </div>
+            </div>
+
+            <!-- Project 2 (collapsed) -->
+            <div class="project-card">
+              <div class="project-card-header" onclick="toggleProject(this)">
+                <div>
+                  <div class="project-name-preview">Киберспортивный турнирный портал</div>
+                  <div class="project-meta-preview">Team Lead · 13 мес.</div>
+                </div>
+                <div class="project-header-right">
+                  <button class="btn-remove-project" onclick="event.stopPropagation();this.closest('.project-card').remove()">✕</button>
+                  <div class="project-chevron">▼</div>
+                </div>
+              </div>
+              <div class="project-body">
+                <div class="form-field"><div class="field-label">Название проекта</div><input class="field-input" value="Киберспортивный турнирный портал"></div>
+                <div class="project-grid">
+                  <div class="form-field"><div class="field-label">Роль</div><input class="field-input" value="Team Lead"></div>
+                  <div class="form-field"><div class="field-label">Длительность</div><input class="field-input" value="13 месяцев"></div>
+                </div>
+                <div class="form-field"><div class="field-label">Команда</div><input class="field-input" value="Individual development"></div>
+                <div class="form-field"><div class="field-label">Описание проекта</div><textarea class="field-input field-textarea">Портал для киберспортивных турниров, 5000–30000 одновременных пользователей.</textarea></div>
+                <div class="form-field"><div class="field-label">Что реализовывал</div><textarea class="field-input field-textarea" style="min-height:100px">Бэкенд на Node.js/Express с MongoDB и Redis
+Фронтенд на AngularJS + socket.io
+ERP-система с инвентаризацией и генерацией документов</textarea></div>
+                <div class="form-field"><div class="field-label">Стек технологий</div><input class="field-input" value="Node.js, Express, MongoDB, Redis, AngularJS, Django"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="panel" style="padding:16px 24px;">
+          <div class="btn-row" style="margin-top:0">
+            <button class="btn-primary">Сохранить</button>
+            <button class="btn-secondary">↓ Скачать docx</button>
+            <button class="btn-danger-outline">Удалить CV</button>
+          </div>
+        </div>
+
+        <!-- Regen -->
+        <div class="panel">
+          <div class="panel-title">Перегенерировать через AI</div>
+          <textarea class="regen-input" placeholder="Уточни промпт или добавь детали...">Senior PHP разработчик, 20 лет опыта...</textarea>
+          <div style="margin-top:10px"><button class="btn-generate">⚡ Перегенерировать</button></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Preview -->
+      <div style="position:sticky;top:80px;">
+        <div class="panel">
+          <div class="panel-title">Превью структуры CV</div>
+          <div class="cv-preview">
+            <div class="preview-name">Алексей К. — PHP</div>
+            <div class="preview-block"><div class="preview-block-label">Опыт</div><div class="preview-block-content">19 лет 11 месяцев</div></div>
+            <div class="preview-block"><div class="preview-block-label">Языки</div><div class="preview-block-content">PHP, Python, JavaScript, C#, SQL</div></div>
+            <div class="preview-block"><div class="preview-block-label">Фреймворки</div><div class="preview-block-content">Django, DRF, Node.js, Yii, Vue.js, React.js</div></div>
+            <div class="preview-block"><div class="preview-block-label">Библиотеки</div><div class="preview-block-content">MySQL, PostgreSQL, Redis, Docker, REST API</div></div>
+            <div class="preview-block">
+              <div class="preview-block-label">Ключевые проекты</div>
+              <div class="preview-block-content">
+                <div class="preview-project">
+                  <div class="preview-project-name">Интернет-компания (ПО)</div>
+                  <div>Роль: CTO · 200+ чел. · 98 мес.</div>
+                  <div style="margin-top:3px;color:var(--text-3)">Python, PHP, Docker, GitLab CI/CD...</div>
+                </div>
+                <div class="preview-project">
+                  <div class="preview-project-name">Киберспортивный портал</div>
+                  <div>Роль: Team Lead · 13 мес.</div>
+                  <div style="margin-top:3px;color:var(--text-3)">Node.js, MongoDB, Redis, AngularJS...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+  }
+}
+function switchToDetail() {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-detail').classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+}
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-label').textContent = isDark ? '☀️ Светлая' : '🌙 Тёмная';
+}
+function toggleProject(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.project-chevron');
+  body.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
+function addProject() {
+  const list = document.getElementById('projects-list');
+  const card = document.createElement('div');
+  card.className = 'project-card';
+  card.innerHTML = `
+    <div class="project-card-header" onclick="toggleProject(this)">
+      <div>
+        <div class="project-name-preview">Новый проект</div>
+        <div class="project-meta-preview">Заполните поля ниже</div>
+      </div>
+      <div class="project-header-right">
+        <button class="btn-remove-project" onclick="event.stopPropagation();this.closest('.project-card').remove()">✕</button>
+        <div class="project-chevron open">▼</div>
+      </div>
+    </div>
+    <div class="project-body open">
+      <div class="form-field"><div class="field-label">Название проекта</div><input class="field-input" placeholder="Название проекта"></div>
+      <div class="project-grid">
+        <div class="form-field"><div class="field-label">Роль</div><input class="field-input" placeholder="Team Lead"></div>
+        <div class="form-field"><div class="field-label">Длительность</div><input class="field-input" placeholder="12 месяцев"></div>
+      </div>
+      <div class="form-field"><div class="field-label">Команда</div><input class="field-input" placeholder="5 Backend, 2 Frontend..."></div>
+      <div class="form-field"><div class="field-label">Описание проекта</div><textarea class="field-input field-textarea" placeholder="Краткое описание..."></textarea></div>
+      <div class="form-field"><div class="field-label">Что реализовывал</div><textarea class="field-input field-textarea" style="min-height:100px" placeholder="Каждый пункт с новой строки"></textarea></div>
+      <div class="form-field"><div class="field-label">Стек технологий</div><input class="field-input" placeholder="Python, Docker, PostgreSQL..."></div>
+    </div>`;
+  list.appendChild(card);
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+</script>
+</body>
+</html>
