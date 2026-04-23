@@ -1,0 +1,37 @@
+{% extends "admin/base.html" %}
+{% block title %}API настройки — FIRECODE CV{% endblock %}
+{% block admin_content %}
+<h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.25rem;">Настройки DeepSeek API</h2>
+
+<div class="card" style="max-width:520px;">
+  <form method="post" action="/admin/settings">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}" />
+    <div class="form-group">
+      <label class="form-label">API Ключ DeepSeek</label>
+      <input class="form-input" type="password" name="deepseek_api_key"
+        value="{{ api_key }}" placeholder="sk-..." autocomplete="off" />
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;">
+        Ключ хранится в базе данных. Не передаётся клиенту.
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Модель</label>
+      <input class="form-input" name="deepseek_model" value="{{ model or 'deepseek-chat' }}" />
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;">
+        Рекомендуется: <code>deepseek-chat</code>
+      </div>
+    </div>
+    <button class="btn btn-primary" type="submit">💾 Сохранить</button>
+  </form>
+</div>
+
+<div class="card" style="max-width:520px;margin-top:1rem;">
+  <div class="section-title">Документация API</div>
+  <div style="font-size:0.85rem;color:var(--text-muted);line-height:1.7;">
+    <div>• Базовый URL: <code>https://api.deepseek.com/v1</code></div>
+    <div>• Метод: <code>POST /chat/completions</code></div>
+    <div>• Совместим с OpenAI API</div>
+    <div style="margin-top:0.5rem;">Получить ключ: <strong>platform.deepseek.com</strong></div>
+  </div>
+</div>
+{% endblock %}

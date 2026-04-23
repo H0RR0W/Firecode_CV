@@ -1,0 +1,84 @@
+{% extends "admin/base.html" %}
+{% block title %}Пользователи — FIRECODE CV{% endblock %}
+{% block admin_content %}
+<h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.25rem;">Управление пользователями</h2>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<!-- Create user form -->
+<div class="card" style="margin-bottom:1.5rem;">
+  <div class="section-title">Добавить пользователя</div>
+  <form method="post" action="/admin/users" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}" />
+    <div class="form-group" style="margin:0;flex:1;min-width:130px;">
+      <label class="form-label">Логин</label>
+      <input class="form-input" name="login" required autocomplete="off" />
+    </div>
+    <div class="form-group" style="margin:0;flex:1;min-width:130px;">
+      <label class="form-label">Пароль</label>
+      <input class="form-input" type="password" name="password" required autocomplete="new-password" />
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label class="form-label">Роль</label>
+      <select class="form-input form-select" name="role" style="min-width:110px;">
+        <option value="user">user</option>
+        <option value="admin">admin</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" type="submit" style="margin-bottom:1rem;">➕ Создать</button>
+  </form>
+</div>
+
+<!-- Users table -->
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Логин</th>
+        <th>Роль</th>
+        <th>Создан</th>
+        <th>Последний вход</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td style="font-weight:600;">{{ u.login }}</td>
+        <td><span class="badge badge-{{ u.role }}">{{ u.role }}</span></td>
+        <td style="color:var(--text-muted);font-size:0.82rem;">{{ u.created_at[:10] }}</td>
+        <td style="color:var(--text-muted);font-size:0.82rem;">
+          {{ u.last_login[:16].replace("T", " ") if u.last_login else "—" }}
+        </td>
+        <td>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;">
+            <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+              <button class="btn btn-secondary" style="font-size:0.75rem;padding:0.25rem 0.7rem;"
+                onclick="togglePwForm({{ u.id }})">🔑 Пароль</button>
+              {% if u.login != "admin" %}
+              <button class="btn btn-danger" style="font-size:0.75rem;padding:0.25rem 0.7rem;"
+                onclick="deleteUser({{ u.id }}, '{{ u.login }}')">🗑 Удалить</button>
+              {% endif %}
+            </div>
+            <form id="pwform-{{ u.id }}" class="pw-form"
+              method="post" action="/admin/users/{{ u.id }}/password">
+              <input type="hidden" name="csrf_token" value="{{ csrf }}" />
+              <input class="form-input" type="password" name="new_password"
+                placeholder="Новый пароль" style="max-width:180px;" required
+                autocomplete="new-password" />
+              <button class="btn btn-primary" type="submit"
+                style="font-size:0.75rem;padding:0.3rem 0.8rem;">Сохранить</button>
+              <button type="button" class="btn btn-secondary"
+                style="font-size:0.75rem;padding:0.3rem 0.8rem;"
+                onclick="togglePwForm({{ u.id }})">✕</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

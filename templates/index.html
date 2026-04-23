@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}FIRECODE CV — Главная{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="create">➕ Создать CV</button>
+    <button class="tab-btn" data-tab="list">📋 Список CV</button>
+  </div>
+
+  <!-- ── Tab: Create ── -->
+  <div id="tab-create" class="tab-content active">
+    <div class="card" style="max-width:700px;">
+      <div class="section-title">Новый CV</div>
+      <div class="form-group">
+        <label class="form-label">Промпт для генерации</label>
+        <textarea id="genPrompt" class="form-textarea prompt-area"
+          placeholder="Опишите кандидата: имя, специализация, опыт, проекты...&#10;&#10;Пример: PHP разработчик Алексей, 20 лет опыта в highload backend, работал как CTO в крупных интернет-компаниях, специализация — PHP, Python, масштабирование систем."></textarea>
+        <div class="generate-hint">Чем подробнее промпт — тем точнее результат</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <button class="btn btn-primary" id="btnGenerate" onclick="generateCV()">
+          ⚡ Сгенерировать CV
+        </button>
+        <div id="genStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab: List ── -->
+  <div id="tab-list" class="tab-content">
+    <div class="filter-bar">
+      <input class="form-input" id="fName" placeholder="🔍 Поиск по имени" oninput="filterCVs()" style="max-width:220px;" />
+      <input class="form-input" id="fSpec" placeholder="Специализация" oninput="filterCVs()" style="max-width:220px;" />
+      <input class="form-input" id="fStack" placeholder="Технологии" oninput="filterCVs()" style="max-width:200px;" />
+      <select class="form-input form-select" id="fSort" onchange="filterCVs()" style="max-width:170px;">
+        <option value="desc">↓ Сначала новые</option>
+        <option value="asc">↑ Сначала старые</option>
+      </select>
+    </div>
+    <div id="cvGrid" class="cv-grid">
+      {% for cv in cvs %}
+      <div class="card" style="cursor:pointer;" onclick="location.href='/cv/{{ cv.id }}'">
+        <div style="font-weight:700;font-size:0.95rem;">{{ cv.name }}</div>
+        <div class="cv-card-spec">{{ cv.specialization }}</div>
+        {% if cv.languages %}
+        <div class="cv-card-stack">{{ cv.languages[:60] }}{% if cv.languages|length > 60 %}…{% endif %}</div>
+        {% endif %}
+        <div class="cv-card-meta">{{ cv.created_at[:10] }}</div>
+      </div>
+      {% else %}
+      <div style="color:var(--text-muted);grid-column:1/-1;padding:2rem 0;text-align:center;">
+        CV пока нет. Создайте первый во вкладке «Создать CV»!
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

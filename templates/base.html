@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}FIRECODE CV{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav-logo" href="/">⚡ FIRECODE CV</a>
+    <div class="nav-links">
+      <a href="/" {% if request.url.path == "/" %}class="active"{% endif %}>CV</a>
+      {% if user and user.role == "admin" %}
+      <a href="/admin/stats" {% if "/admin" in request.url.path %}class="active"{% endif %}>Админ</a>
+      {% endif %}
+      <a href="/logout">Выйти ({{ user.login if user else "" }})</a>
+      <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️ Светлая</button>
+    </div>
+  </nav>
+  {% block content %}{% endblock %}
+  <script src="/static/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

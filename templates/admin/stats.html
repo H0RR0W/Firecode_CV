@@ -1,0 +1,57 @@
+{% extends "admin/base.html" %}
+{% block title %}Статистика — FIRECODE CV{% endblock %}
+{% block admin_content %}
+<h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.25rem;">Статистика</h2>
+
+<div class="stats-grid">
+  <div class="card stat-card">
+    <div class="stat-number">{{ stats.total_cvs }}</div>
+    <div class="stat-label">Всего CV</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-number">{{ stats.total_users }}</div>
+    <div class="stat-label">Пользователей</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-number">{{ stats.total_downloads }}</div>
+    <div class="stat-label">Скачиваний</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-title" style="margin-bottom:1rem;">Последние действия</div>
+  {% if stats.recent_actions %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Действие</th>
+        <th>Пользователь</th>
+        <th>CV</th>
+        <th>Детали</th>
+        <th>Дата</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in stats.recent_actions %}
+      <tr>
+        <td>
+          {% if row.action == "generate" %}⚡ generate
+          {% elif row.action == "edit" %}✏️ edit
+          {% elif row.action == "download" %}⬇ download
+          {% elif row.action == "delete" %}🗑 delete
+          {% elif row.action == "regen_field" %}🔄 regen
+          {% else %}{{ row.action }}{% endif %}
+        </td>
+        <td>{{ row.login }}</td>
+        <td>{% if row.cv_id %}<a href="/cv/{{ row.cv_id }}" style="color:var(--accent);">#{{ row.cv_id }}</a>{% else %}—{% endif %}</td>
+        <td style="color:var(--text-muted);font-size:0.8rem;">{{ row.detail or '—' }}</td>
+        <td style="color:var(--text-muted);font-size:0.8rem;">{{ row.created_at[:16].replace("T", " ") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="color:var(--text-muted);padding:1rem 0;">Действий пока нет.</div>
+  {% endif %}
+</div>
+{% endblock %}

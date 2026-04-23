@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Вход — FIRECODE CV</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="login-page">
+    <div class="card login-card">
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <div style="font-size:2.5rem;margin-bottom:0.5rem;">⚡</div>
+        <div class="login-title">FIRECODE CV</div>
+        <div class="login-sub">Генерация и управление резюме</div>
+      </div>
+      {% if error %}
+      <div class="alert alert-error">{{ error }}</div>
+      {% endif %}
+      <form method="post" action="/login">
+        <input type="hidden" name="csrf_token" value="{{ csrf }}" />
+        <div class="form-group">
+          <label class="form-label">Логин</label>
+          <input class="form-input" type="text" name="login" autofocus required autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Пароль</label>
+          <input class="form-input" type="password" name="password" required autocomplete="current-password" />
+        </div>
+        <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center;margin-top:0.5rem;">
+          Войти →
+        </button>
+      </form>
+      <div style="text-align:right;margin-top:1.25rem;">
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️ Светлая</button>
+      </div>
+    </div>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

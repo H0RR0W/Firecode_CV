@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Админ — FIRECODE CV{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav-logo" href="/">⚡ FIRECODE CV</a>
+    <div class="nav-links">
+      <a href="/">CV</a>
+      <a href="/admin/stats" class="active">Админ</a>
+      <a href="/logout">Выйти ({{ user.login }})</a>
+      <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️ Светлая</button>
+    </div>
+  </nav>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <span class="sidebar-label">Панель управления</span>
+      <a href="/admin/stats" {% if "/stats" in request.url.path %}class="active"{% endif %}>📊 Статистика</a>
+      <a href="/admin/users" {% if "/users" in request.url.path %}class="active"{% endif %}>👥 Пользователи</a>
+      <a href="/admin/settings" {% if "/settings" in request.url.path %}class="active"{% endif %}>⚙️ API настройки</a>
+    </aside>
+    <main class="admin-content">
+      {% block admin_content %}{% endblock %}
+    </main>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

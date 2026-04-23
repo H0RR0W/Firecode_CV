@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}{{ cv.name }} — FIRECODE CV{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <a href="/" class="btn btn-secondary">← Назад</a>
+    <h1>{{ cv.name }} — {{ cv.specialization }}</h1>
+    <div class="page-header-actions">
+      <a href="/api/cvs/{{ cv.id }}/download" class="btn btn-secondary">⬇ Скачать</a>
+      {% if user.role == "admin" %}
+      <button class="btn btn-danger" onclick="deleteCV({{ cv.id }})">🗑 Удалить</button>
+      {% endif %}
+      <button class="btn btn-primary" id="btnSave" onclick="saveCV()">💾 Сохранить</button>
+    </div>
+  </div>
+
+  <div class="cv-detail-layout">
+    <!-- ── Left: Edit form ── -->
+    <div>
+      <!-- Top-level fields -->
+      <div class="card" style="margin-bottom:1.25rem;">
+        <div class="section-title">Основные данные</div>
+
+        {% set top_fields = [
+          ("name", "Имя кандидата"),
+          ("specialization", "Специализация"),
+          ("experience", "Опыт"),
+          ("languages", "Языки"),
+          ("frameworks", "Фреймворки"),
+          ("libraries", "Библиотеки"),
+          ("other_skills", "Другие навыки"),
+        ] %}
+
+        {% for field, label in top_fields %}
+        <div class="form-group">
+          <label class="form-label">
+            {{ label }}
+            <button class="btn-ai" onclick="openRegen('{{ field }}', null)">⚡ AI</button>
+          </label>
+          <input class="form-input" id="field-{{ field }}" value="{{ cv[field] or '' }}"
+            {% if field == "name" %}oninput="syncPreview()"{% endif %}
+            {% if field == "specialization" %}oninput="syncPreview()"{% endif %} />
+          <div class="regen-panel" id="regen-{{ field }}">
+            <input class="regen-hint" id="hint-{{ field }}" placeholder="Подсказка для AI (необязательно)" />
+            <div class="regen-actions">
+              <button class="btn btn-primary" style="font-size:0.78rem;padding:0.3rem 0.9rem;"
+                onclick="doRegen('{{ field }}', null)">⚡ Перегенерировать</button>
+              <button class="btn btn-secondary" style="font-size:0.78rem;padding:0.3rem 0.8rem;"
+                onclick="closeRegen('{{ field }}', null)">Отмена</button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Projects -->
+      <div class="section-title" style="margin-bottom:0.75rem;">Проекты</div>
+      <div id="projectsContainer">
+        {% for project in cv.projects %}
+        {% set pi = loop.index0 %}
+        <div class="project-accordion" data-project-idx="{{ pi }}">
+          <div class="project-header" onclick="toggleProject(this)">
+            <span class="project-name-display">{{ project.name or ('Проект ' ~ loop.index) }}</span>
+            <span class="project-chevron">▼</span>
+          </div>
+          <div class="project-body {% if loop.first %}open{% endif %}">
+            {% set proj_fields = [
+              ("name", "Название компании/проекта"),
+              ("role", "Роль"),
+              ("team", "Команда"),
+              ("description", "Описание компании/проекта"),
+              ("tech_stack", "Стек технологий"),
+              ("duration", "Длительность"),
+            ] %}
+            {% for pfield, plabel in proj_fields %}
+            <div class="form-group">
+              <label class="form-label">
+                {{ plabel }}
+                <button class="btn-ai" onclick="openRegen('{{ pfield }}', {{ pi }})">⚡ AI</button>
+              </label>
+              <input class="form-input"
+                id="proj-{{ pi }}-{{ pfield }}"
+                value="{{ project[pfield] or '' }}"
+                {% if pfield == "name" %}oninput="updateProjectTitle({{ pi }}, this.value)"{% endif %} />
+              <div class="regen-panel" id="regen-{{ pi }}-{{ pfield }}">
+                <input class="regen-hint" id="hint-{{ pi }}-{{ pfield }}" placeholder="Подсказка для AI" />
+                <div class="regen-actions">
+                  <button class="btn btn-primary" style="font-size:0.78rem;padding:0.3rem 0.9rem;"
+                    onclick="doRegen('{{ pfield }}', {{ pi }})">⚡ Перегенерировать</button>
+                  <button class="btn btn-secondary" style="font-size:0.78rem;padding:0.3rem 0.8rem;"
+                    onclick="closeRegen('{{ pfield }}', {{ pi }})">Отмена</button>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+
+            <!-- Implementation -->
+            <div class="form-group">
+              <label class="form-label">
+                Что реализовывал
+                <button class="btn-ai" onclick="openRegen('implementation', {{ pi }})">⚡ AI</button>
+              </label>
+              <textarea class="form-textarea" id="proj-{{ pi }}-implementation" rows="5"
+                >{% if project.implementation is iterable and project.implementation is not string %}{{ project.implementation | join('\n') }}{% else %}{{ project.implementation or '' }}{% endif %}</textarea>
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.2rem;">Каждый пункт — на отдельной строке</div>
+              <div class="regen-panel" id="regen-{{ pi }}-implementation">
+                <input class="regen-hint" id="hint-{{ pi }}-implementation" placeholder="Подсказка для AI" />
+                <div class="regen-actions">
+                  <button class="btn btn-primary" style="font-size:0.78rem;padding:0.3rem 0.9rem;"
+                    onclick="doRegen('implementation', {{ pi }})">⚡ Перегенерировать</button>
+                  <button class="btn btn-secondary" style="font-size:0.78rem;padding:0.3rem 0.8rem;"
+                    onclick="closeRegen('implementation', {{ pi }})">Отмена</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div id="saveStatus" style="margin-top:1rem;"></div>
+    </div>
+
+    <!-- ── Right: Preview ── -->
+    <div class="cv-preview-sticky">
+      <div class="card cv-preview">
+        <h3>📄 Превью CV</h3>
+        <div class="preview-name" id="prev-name">{{ cv.name }}</div>
+        <div class="preview-spec" id="prev-spec">{{ cv.specialization }}</div>
+        <hr class="preview-divider">
+        <div class="preview-row">
+          <span class="preview-label">Опыт: </span><span id="prev-exp">{{ cv.experience or '—' }}</span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-label">Языки: </span><span id="prev-lang">{{ cv.languages or '—' }}</span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-label">Фреймворки: </span><span id="prev-fw">{{ cv.frameworks or '—' }}</span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-label">Библиотеки: </span><span id="prev-lib">{{ cv.libraries or '—' }}</span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-label">Другие: </span><span id="prev-other">{{ cv.other_skills or '—' }}</span>
+        </div>
+        <hr class="preview-divider">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.5rem;">Проекты</div>
+        <div id="prev-projects">
+          {% for project in cv.projects %}
+          <div style="margin-bottom:0.5rem;">
+            <div style="font-weight:600;color:var(--accent);font-size:0.82rem;">{{ project.name }}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">{{ project.role }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CV_ID = {{ cv.id }};
+</script>
+{% endblock %}
